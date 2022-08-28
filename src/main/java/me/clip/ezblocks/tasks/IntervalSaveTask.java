@@ -31,9 +31,8 @@ public class IntervalSaveTask implements Runnable {
 			String uuid = si.next();
 			int broken = BreakHandler.breaks.get(uuid);
 			if (uuid != null) {
-			plugin.playerconfig.savePlayer(uuid, broken);	
+			plugin.getPlayerConfig().savePlayer(uuid, broken);
 			}
 		}
-		save = null;
 	}
 }

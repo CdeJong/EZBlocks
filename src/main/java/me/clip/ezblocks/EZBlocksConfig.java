@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import me.clip.ezblocks.reward.Reward;
+import me.clip.ezblocks.reward.RewardHandler;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class EZBlocksConfig {
@@ -133,11 +135,10 @@ public class EZBlocksConfig {
 	}
 
 	protected int loadGlobalRewards() {
-		FileConfiguration c = plugin.getConfig();
-		RewardHandler.globalRewards = new HashMap<Integer, Reward>();
-		if (c.isConfigurationSection("global_rewards")) {
+		FileConfiguration config = plugin.getConfig();
+		if (config.isConfigurationSection("global_rewards")) {
 
-			Set<String> keys = c.getConfigurationSection("global_rewards")
+			Set<String> keys = config.getConfigurationSection("global_rewards")
 					.getKeys(false);
 
 			if (keys == null || keys.isEmpty()) {
@@ -146,26 +147,25 @@ public class EZBlocksConfig {
 
 			for (String id : keys) {
 				Reward r = new Reward(id);
-				int needed = c.getInt("global_rewards."+id+".blocks_needed");
+				int needed = config.getInt("global_rewards."+id+".blocks_needed");
 				if (needed > 0) {
 					r.setBlocksNeeded(needed);
-					r.setCommands(c.getStringList("global_rewards." + id
+					r.setCommands(config.getStringList("global_rewards." + id
 							+ ".reward_commands"));
-					plugin.rewards.setReward(r.getBlocksNeeded(), r);
+					plugin.getRewardHandler().setReward(r.getBlocksNeeded(), r);
 				}
 				
 			}
-			return RewardHandler.globalRewards.size();
+			return plugin.getRewardHandler().getGlobalRewards().size();
 		}
 		return 0;
 	}
 	
 	protected int loadPickaxeGlobalRewards() {
-		FileConfiguration c = plugin.getConfig();
-		RewardHandler.pickaxeGlobalRewards = new HashMap<Integer, Reward>();
-		if (c.isConfigurationSection("pickaxe_global_rewards")) {
+		FileConfiguration config = plugin.getConfig();
+		if (config.isConfigurationSection("pickaxe_global_rewards")) {
 
-			Set<String> keys = c.getConfigurationSection("pickaxe_global_rewards")
+			Set<String> keys = config.getConfigurationSection("pickaxe_global_rewards")
 					.getKeys(false);
 
 			if (keys == null || keys.isEmpty()) {
@@ -174,26 +174,25 @@ public class EZBlocksConfig {
 
 			for (String id : keys) {
 				Reward r = new Reward(id);
-				int needed = c.getInt("pickaxe_global_rewards."+id+".blocks_needed");
+				int needed = config.getInt("pickaxe_global_rewards."+id+".blocks_needed");
 				if (needed > 0) {
 					r.setBlocksNeeded(needed);
-					r.setCommands(c.getStringList("pickaxe_global_rewards." + id
+					r.setCommands(config.getStringList("pickaxe_global_rewards." + id
 							+ ".reward_commands"));
-					plugin.rewards.setPickaxeReward(r.getBlocksNeeded(), r);
+					plugin.getRewardHandler().setPickaxeReward(r.getBlocksNeeded(), r);
 				}
 				
 			}
-			return RewardHandler.pickaxeGlobalRewards.size();
+			return plugin.getRewardHandler().getPickaxeGlobalRewards().size();
 		}
 		return 0;
 	}
 	
 	protected int loadIntervalRewards() {
-		FileConfiguration c = plugin.getConfig();
-		RewardHandler.intervalRewards = new HashMap<Integer, Reward>();
-		if (c.isConfigurationSection("interval_rewards")) {
+		FileConfiguration config = plugin.getConfig();
+		if (config.isConfigurationSection("interval_rewards")) {
 
-			Set<String> keys = c.getConfigurationSection("interval_rewards")
+			Set<String> keys = config.getConfigurationSection("interval_rewards")
 					.getKeys(false);
 
 			if (keys == null || keys.isEmpty()) {
@@ -202,15 +201,15 @@ public class EZBlocksConfig {
 
 			for (String id : keys) {
 				Reward r = new Reward(id);
-				int every = c.getInt("interval_rewards."+id+".every");
+				int every = config.getInt("interval_rewards."+id+".every");
 				if (every > 0) {
 				r.setBlocksNeeded(every);
-				r.setCommands(c.getStringList("interval_rewards." + id
+				r.setCommands(config.getStringList("interval_rewards." + id
 						+ ".reward_commands"));
-				plugin.rewards.setIntervalReward(r.getBlocksNeeded(), r);
+				plugin.getRewardHandler().setIntervalReward(r.getBlocksNeeded(), r);
 				}
 			}
-			return RewardHandler.intervalRewards.size();
+			return plugin.getRewardHandler().getIntervalRewards().size();
 		}
 		return 0;
 
@@ -218,7 +217,6 @@ public class EZBlocksConfig {
 	
 	protected int loadPickaxeIntervalRewards() {
 		FileConfiguration c = plugin.getConfig();
-		RewardHandler.pickaxeIntervalRewards = new HashMap<Integer, Reward>();
 		if (c.isConfigurationSection("pickaxe_interval_rewards")) {
 
 			Set<String> keys = c.getConfigurationSection("pickaxe_interval_rewards")
@@ -235,10 +233,10 @@ public class EZBlocksConfig {
 				r.setBlocksNeeded(every);
 				r.setCommands(c.getStringList("pickaxe_interval_rewards." + id
 						+ ".reward_commands"));
-				plugin.rewards.setPickaxeIntervalReward(r.getBlocksNeeded(), r);
+				plugin.getRewardHandler().setPickaxeIntervalReward(r.getBlocksNeeded(), r);
 				}
 			}
-			return RewardHandler.pickaxeIntervalRewards.size();
+			return plugin.getRewardHandler().getPickaxeIntervalRewards().size();
 		}
 		return 0;
 	}

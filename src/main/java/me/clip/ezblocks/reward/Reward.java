@@ -1,25 +1,19 @@
-package me.clip.ezblocks;
+package me.clip.ezblocks.reward;
 
 import java.util.List;
 
 public class Reward {
 	
-	private String rewardName;
-	
+	private final String rewardName;
 	private int blocksNeeded;
-	
 	private List<String> commands;
 	
 	public Reward(String rewardName) {
-		this.setRewardName(rewardName);
+		this.rewardName = rewardName;
 	}
 
 	public String getRewardName() {
 		return rewardName;
-	}
-
-	public void setRewardName(String rewardName) {
-		this.rewardName = rewardName;
 	}
 
 	public int getBlocksNeeded() {

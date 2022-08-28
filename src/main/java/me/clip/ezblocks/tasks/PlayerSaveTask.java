@@ -16,6 +16,6 @@ public class PlayerSaveTask implements Runnable {
 
 	@Override
 	public void run() {
-		plugin.playerconfig.savePlayer(uuid, toSave);
+		plugin.getPlayerConfig().savePlayer(uuid, toSave);
 	}
 }

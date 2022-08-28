@@ -71,18 +71,18 @@ public class EZBlocksCommands implements CommandExecutor {
 						String uid = target.getUniqueId().toString();
 						
 						if (BreakHandler.breaks.containsKey(uid)) {
-							sms(s, EZBlocks.options.getBrokenMsg().replace("%player%", target.getName())
+							sms(s, plugin.getOptions().getBrokenMsg().replace("%player%", target.getName())
 									.replace("%blocksbroken%", BreakHandler.breaks.get(uid)+""));
 							return true;
 						}
 						else {
-							if (plugin.playerconfig.hasData(uid)) {
-								BreakHandler.breaks.put(uid, plugin.playerconfig.getBlocksBroken(uid));
+							if (plugin.getPlayerConfig().hasData(uid)) {
+								BreakHandler.breaks.put(uid, plugin.getPlayerConfig().getBlocksBroken(uid));
 							}
 							else {
 								BreakHandler.breaks.put(uid, 0);
 							}
-							sms(s, EZBlocks.options.getBrokenMsg().replace("%player%", target.getName())
+							sms(s, plugin.getOptions().getBrokenMsg().replace("%player%", target.getName())
 									.replace("%blocksbroken%", BreakHandler.breaks.get(uid)+""));	
 						}
 						
@@ -147,10 +147,10 @@ public class EZBlocksCommands implements CommandExecutor {
 						
 					String uid = target.getUniqueId().toString();
 					
-					int current = BreakHandler.breaks.containsKey(uid) ? BreakHandler.breaks.get(uid) : 0;
+					int current = BreakHandler.breaks.getOrDefault(uid, 0);
 						
 					for (int i = current+1 ; i < current+b ; i++) {
-						plugin.rewards.giveReward(target, i);
+						plugin.getRewardHandler().giveReward(target, i);
 					}
 					
 					BreakHandler.breaks.put(uid, current+b);
@@ -182,7 +182,7 @@ public class EZBlocksCommands implements CommandExecutor {
 						
 					String uid = target.getUniqueId().toString();
 					
-					int current = BreakHandler.breaks.containsKey(uid) ? BreakHandler.breaks.get(uid) : 0;
+					int current = BreakHandler.breaks.getOrDefault(uid, 0);
 						
 					if (b <= current) { 
 						BreakHandler.breaks.put(uid, current-b);
@@ -210,18 +210,18 @@ public class EZBlocksCommands implements CommandExecutor {
 		 */
 		if (args.length == 0) {
 			
-			if (EZBlocks.options.useBlocksCommand()) {
+			if (plugin.getOptions().useBlocksCommand()) {
 				if (BreakHandler.breaks.containsKey(uuid)) {
-					sms(s, EZBlocks.options.getBrokenMsg().replace("%player%", p.getName())
+					sms(s, plugin.getOptions().getBrokenMsg().replace("%player%", p.getName())
 								.replace("%blocksbroken%", BreakHandler.breaks.get(uuid) + ""));
 					return true;
 				} else {
-					if (plugin.playerconfig.hasData(uuid)) {
-						BreakHandler.breaks.put(uuid, plugin.playerconfig.getBlocksBroken(uuid));
+					if (plugin.getPlayerConfig().hasData(uuid)) {
+						BreakHandler.breaks.put(uuid, plugin.getPlayerConfig().getBlocksBroken(uuid));
 					} else {
 						BreakHandler.breaks.put(uuid, 0);
 					}
-					sms(s, EZBlocks.options.getBrokenMsg().replace("%player%", p.getName())
+					sms(s, plugin.getOptions().getBrokenMsg().replace("%player%", p.getName())
 								.replace("%blocksbroken%", BreakHandler.breaks.get(uuid) + ""));
 				}
 			}
@@ -234,14 +234,14 @@ public class EZBlocksCommands implements CommandExecutor {
 			 */
 			if (args[0].equalsIgnoreCase("help")) {
 				if (!p.hasPermission("ezblocks.admin")) {
-					if (EZBlocks.options.useBlocksCommand()) {
+					if (plugin.getOptions().useBlocksCommand()) {
 						sms(s, "&cEZBlocks &7Help");
 						sms(s, "&f/blocks &7- &cView your blocks broken");
 					}
 					return true;
 				}
 				sms(s, "&c&lEZ&f&lB&flocks &7Help");
-				if (EZBlocks.options.useBlocksCommand()) {
+				if (plugin.getOptions().useBlocksCommand()) {
 					sms(s, "&f/blocks &7- &cView your blocks broken");
 				}
 				sms(s, "&f/blocks check <player> &7- &cView others blocks broken");
@@ -284,18 +284,18 @@ public class EZBlocksCommands implements CommandExecutor {
 					String uid = target.getUniqueId().toString();
 					
 					if (BreakHandler.breaks.containsKey(uid)) {
-						sms(s, EZBlocks.options.getBrokenMsg().replace("%player%", target.getName())
+						sms(s, plugin.getOptions().getBrokenMsg().replace("%player%", target.getName())
 								.replace("%blocksbroken%", BreakHandler.breaks.get(uid)+""));
 						return true;
 					}
 					else {
-						if (plugin.playerconfig.hasData(uid)) {
-							BreakHandler.breaks.put(uid, plugin.playerconfig.getBlocksBroken(uid));
+						if (plugin.getPlayerConfig().hasData(uid)) {
+							BreakHandler.breaks.put(uid, plugin.getPlayerConfig().getBlocksBroken(uid));
 						}
 						else {
 							BreakHandler.breaks.put(uid, 0);
 						}
-						sms(s, EZBlocks.options.getBrokenMsg().replace("%player%", target.getName())
+						sms(s, plugin.getOptions().getBrokenMsg().replace("%player%", target.getName())
 								.replace("%blocksbroken%", BreakHandler.breaks.get(uid)+""));	
 					}
 					
@@ -374,11 +374,11 @@ public class EZBlocksCommands implements CommandExecutor {
 					
 				String uid = target.getUniqueId().toString();
 				
-				int current = BreakHandler.breaks.containsKey(uid) ? BreakHandler.breaks.get(uid) : 0;
+				int current = BreakHandler.breaks.getOrDefault(uid, 0);
 					
-				if (EZBlocks.options.giveRewardsOnAddCommand()) {
+				if (plugin.getPluginConfig().giveRewardsOnAddCommand()) {
 					for (int i = current+1 ; i <= current+b ; i++) {
-						plugin.rewards.giveReward(target, i);
+						plugin.getRewardHandler().giveReward(target, i);
 					}
 				}
 				
@@ -415,7 +415,7 @@ public class EZBlocksCommands implements CommandExecutor {
 					
 				String uid = target.getUniqueId().toString();
 				
-				int current = BreakHandler.breaks.containsKey(uid) ? BreakHandler.breaks.get(uid) : 0;
+				int current = BreakHandler.breaks.getOrDefault(uid, 0);
 					
 				if (b <= current) { 
 					BreakHandler.breaks.put(uid, current-b);

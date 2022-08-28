@@ -13,6 +13,7 @@ import me.clip.ezblocks.listeners.BreakListenerLowest;
 import me.clip.ezblocks.listeners.BreakListenerMonitor;
 import me.clip.ezblocks.listeners.BreakListenerNormal;
 import me.clip.ezblocks.listeners.TEListener;
+import me.clip.ezblocks.reward.RewardHandler;
 import me.clip.ezblocks.tasks.IntervalSaveTask;
 
 import org.bukkit.Bukkit;
@@ -22,26 +23,23 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class EZBlocks extends JavaPlugin {
 
-	public PlayerConfig playerconfig = new PlayerConfig(this);
-	protected EZBlocksConfig config = new EZBlocksConfig(this);
-	protected BreakHandler breakHandler = new BreakHandler(this);
-	protected RewardHandler rewards = new RewardHandler(this);
-	protected EZBlocksCommands commands = new EZBlocksCommands(this);
+	private PlayerConfig playerConfig = new PlayerConfig(this);
+	private EZBlocksConfig config = new EZBlocksConfig(this);
+	private BreakHandler breakHandler = new BreakHandler(this);
+	private RewardHandler rewardHandler = new RewardHandler(this);
+	private EZBlocksCommands commands = new EZBlocksCommands(this);
 
-	protected static BlockOptions options;
+	private BlockOptions options;
+	private int saveInterval;
+	private BukkitTask savetask;
+	private Database database = null;
+	private static EZBlocks instance;
 
-	protected static int saveInterval;
-	
-	protected static BukkitTask savetask;
-
-	private static EZBlocks ezblocks;
-
-	public static Database database = null;
 
 	@Override
 	public void onEnable() {
 
-		ezblocks = this;
+		instance = this;
 
 		config.loadConfigurationFile();
 		
@@ -60,11 +58,8 @@ public class EZBlocks extends JavaPlugin {
 		getCommand("blocks").setExecutor(commands);
 		
 		getLogger().info(config.loadGlobalRewards() + " global rewards loaded!");
-		
 		getLogger().info(config.loadIntervalRewards() + " interval rewards loaded!");
-		
 		getLogger().info(config.loadPickaxeGlobalRewards() + " global pickaxe rewards loaded!");
-		
 		getLogger().info(config.loadPickaxeIntervalRewards() + " interval pickaxe rewards loaded!");
 		
 		if (Bukkit.getPluginManager().isPluginEnabled("TokenEnchant") && config.hookTokenEnchant()) {
@@ -75,8 +70,8 @@ public class EZBlocks extends JavaPlugin {
 	
 	private void initDb() {
 		if (!getConfig().getBoolean("database.enabled")) {
-			playerconfig.reload();
-			playerconfig.save();
+			playerConfig.reload();
+			playerConfig.save();
 			getLogger().info("Saving/loading via flatfile!");
 		} else {
 			// Make connection to the database
@@ -105,8 +100,8 @@ public class EZBlocks extends JavaPlugin {
 				ex.printStackTrace();
 				getLogger().severe("Falling back to flatfiles ...");
 				database = null;
-				playerconfig.reload();
-				playerconfig.save();
+				playerConfig.reload();
+				playerConfig.save();
 			}
 		}
 	}
@@ -157,16 +152,12 @@ public class EZBlocks extends JavaPlugin {
 				
 				int broken = BreakHandler.breaks.get(uuid);
 				
-				playerconfig.savePlayer(uuid, broken);	
+				playerConfig.savePlayer(uuid, broken);
 				
 			}
 		
 			System.out.println("[EZBlocks] "+save.size()+" players saved!");
-			save = null;
 		}
-		
-		RewardHandler.globalRewards = null;
-		ezblocks = null;
 	}
 
 	protected void registerBlockBreakListener() {
@@ -230,21 +221,41 @@ public class EZBlocks extends JavaPlugin {
 		}
 	}
 
-	public int getBlocksBroken(Player p) {
+	public int getBlocksBroken(Player player) {
 		if (BreakHandler.breaks != null
-				&& BreakHandler.breaks.containsKey(p.getUniqueId().toString())) {
-			return BreakHandler.breaks.get(p.getUniqueId().toString());
+				&& BreakHandler.breaks.containsKey(player.getUniqueId().toString())) {
+			return BreakHandler.breaks.get(player.getUniqueId().toString());
 		} else {
 			return 0;
 		}
 
 	}
 
-	public static EZBlocks getEZBlocks() {
-		return ezblocks;
+	public PlayerConfig getPlayerConfig() {
+		return playerConfig;
 	}
-	
+
+	public EZBlocksConfig getPluginConfig() {
+		return config;
+	}
+
 	public BreakHandler getBreakHandler() {
 		return breakHandler;
+	}
+
+	public RewardHandler getRewardHandler() {
+		return rewardHandler;
+	}
+
+	public BlockOptions getOptions() {
+		return options;
+	}
+
+	public Database getPluginDatabase() {
+		return database;
+	}
+
+	public static EZBlocks getInstance() {
+		return instance;
 	}
 }

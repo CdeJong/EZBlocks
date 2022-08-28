@@ -17,8 +17,8 @@ public class LoadTask implements Runnable {
 	public void run() {
 		if (BreakHandler.breaks != null) {
 			if (!BreakHandler.breaks.containsKey(uuid)) {
-				if (plugin.playerconfig.hasData(uuid)) {
-					BreakHandler.breaks.put(uuid, plugin.playerconfig.getBlocksBroken(uuid));
+				if (plugin.getPlayerConfig().hasData(uuid)) {
+					BreakHandler.breaks.put(uuid, plugin.getPlayerConfig().getBlocksBroken(uuid));
 				} else {
 					BreakHandler.breaks.put(uuid, 0);
 				}

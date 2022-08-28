@@ -56,26 +56,26 @@ public class PlayerConfig {
 		}
 		
 		if (plugin.getConfig().getBoolean("database.enabled")
-				&& EZBlocks.database != null) {
+				&& plugin.getPluginDatabase() != null) {
 			
-			if (EZBlocks.database.getConnection() == null) {
+			if (plugin.getPluginDatabase().getConnection() == null) {
 				plugin.getLogger().warning("Could not connect to database! Failed to save data for uuid: " + uuid + "!");
 				return;
 			}
 
 			try {
 				String query = "SELECT blocksmined FROM `"
-						+ EZBlocks.database.getTablePrefix()
+						+ plugin.getPluginDatabase().getTablePrefix()
 						+ "playerblocks` WHERE uuid=?";
-				PreparedStatement statement = EZBlocks.database.prepare(query);
+				PreparedStatement statement = plugin.getPluginDatabase().prepare(query);
 				statement.setString(1, uuid);
 				ResultSet result = statement.executeQuery();
 				
 				if (result.next()) {
 					
-					query = "UPDATE `"+EZBlocks.database.getTablePrefix()+"playerblocks` SET blocksmined=? WHERE uuid=?";
+					query = "UPDATE `"+plugin.getPluginDatabase().getTablePrefix()+"playerblocks` SET blocksmined=? WHERE uuid=?";
 					
-					PreparedStatement updateStatement = EZBlocks.database.prepare(query);
+					PreparedStatement updateStatement = plugin.getPluginDatabase().prepare(query);
 					
 					updateStatement.setInt(1, broken);
 					updateStatement.setString(2, uuid);
@@ -85,9 +85,9 @@ public class PlayerConfig {
 				} else {
 					// INSERT
 					
-					query = "INSERT INTO `"+EZBlocks.database.getTablePrefix()+"playerblocks` (uuid,blocksmined) VALUES (?,?)";
+					query = "INSERT INTO `"+plugin.getPluginDatabase().getTablePrefix()+"playerblocks` (uuid,blocksmined) VALUES (?,?)";
 					
-					PreparedStatement insertStatement = EZBlocks.database.prepare(query);
+					PreparedStatement insertStatement = plugin.getPluginDatabase().prepare(query);
 					insertStatement.setString(1, uuid);
 					insertStatement.setInt(2, broken);
 					insertStatement.execute();
@@ -108,18 +108,18 @@ public class PlayerConfig {
 
 	public int getBlocksBroken(String uuid) {
 		if (plugin.getConfig().getBoolean("database.enabled")
-				&& EZBlocks.database != null) {
+				&& plugin.getPluginDatabase() != null) {
 			
-			if (EZBlocks.database.getConnection() == null) {
+			if (plugin.getPluginDatabase().getConnection() == null) {
 				plugin.getLogger().warning("Could not connect to database! Failed to load data for uuid: " + uuid + "!");
 				return 0;
 			}
 			// Get data from mysql
 			try {
 				String query = "SELECT blocksmined FROM `"
-						+ EZBlocks.database.getTablePrefix()
+						+ plugin.getPluginDatabase().getTablePrefix()
 						+ "playerblocks` WHERE uuid=?";
-				PreparedStatement statement = EZBlocks.database.prepare(query);
+				PreparedStatement statement = plugin.getPluginDatabase().prepare(query);
 				// Prepare statement will prevent sql injections.
 				// However its rather save
 				// with this data
@@ -140,7 +140,7 @@ public class PlayerConfig {
 
 	public boolean hasData(String uuid) {
 		if (plugin.getConfig().getBoolean("database.enabled")
-				&& EZBlocks.database != null) {
+				&& plugin.getPluginDatabase() != null) {
 			return true;
 		}
 		return this.dataConfig.contains(uuid + ".blocks_broken")

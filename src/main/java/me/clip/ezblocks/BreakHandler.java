@@ -51,17 +51,17 @@ public class BreakHandler implements Listener {
 	
 	private boolean isAllowedBlock(Material m) {
 		
-		if (EZBlocks.options.getBlacklistedBlocks() == null 
-				|| EZBlocks.options.getBlacklistedBlocks().isEmpty()) {
+		if (plugin.getOptions().getBlacklistedBlocks() == null
+				|| plugin.getOptions().getBlacklistedBlocks().isEmpty()) {
 			return true;
 		}
 		
-		if (EZBlocks.options.blacklistIsWhitelist()) {
-			if (!EZBlocks.options.getBlacklistedBlocks().contains(m.toString())) {
+		if (plugin.getOptions().blacklistIsWhitelist()) {
+			if (!plugin.getOptions().getBlacklistedBlocks().contains(m.toString())) {
 				return false;
 			}
 		} else {
-			if (EZBlocks.options.getBlacklistedBlocks().contains(m.toString())) {
+			if (plugin.getOptions().getBlacklistedBlocks().contains(m.toString())) {
 				return false;
 			}
 		}
@@ -71,8 +71,8 @@ public class BreakHandler implements Listener {
 	
 	private boolean isTool(ItemStack i) {
 		
-		return EZBlocks.options.getTrackedTools() != null 
-				&& EZBlocks.options.getTrackedTools().contains(i.getType().name());
+		return plugin.getOptions().getTrackedTools() != null
+				&& plugin.getOptions().getTrackedTools().contains(i.getType().name());
 	}
 	
 	private String getName(ItemStack i) {
@@ -155,17 +155,17 @@ public class BreakHandler implements Listener {
 			return false;
 		}
 		
-		if (EZBlocks.options.survivalOnly() && !p.getGameMode().equals(GameMode.SURVIVAL)) {
+		if (plugin.getOptions().survivalOnly() && !p.getGameMode().equals(GameMode.SURVIVAL)) {
 			return false;
 		}
 		
-		if (!EZBlocks.options.getEnabledWorlds().contains(p.getWorld().getName())
-				&& !EZBlocks.options.getEnabledWorlds().contains("all")) {
+		if (!plugin.getOptions().getEnabledWorlds().contains(p.getWorld().getName())
+				&& !plugin.getOptions().getEnabledWorlds().contains("all")) {
 			return false;
 		}
 			
-		if (EZBlocks.options.onlyBelowY()
-				&& b.getLocation().getBlockY() > EZBlocks.options.getBelowYCoord()) {
+		if (plugin.getOptions().onlyBelowY()
+				&& b.getLocation().getBlockY() > plugin.getOptions().getBelowYCoord()) {
 			return false;
 		}
 		
@@ -183,9 +183,9 @@ public class BreakHandler implements Listener {
 
 		if (!breaks.containsKey(uuid)) {
 
-			if (plugin.playerconfig.hasData(uuid)) {
+			if (plugin.getPlayerConfig().hasData(uuid)) {
 
-				b = plugin.playerconfig.getBlocksBroken(uuid) + 1;
+				b = plugin.getPlayerConfig().getBlocksBroken(uuid) + 1;
 
 			} else {
 
@@ -199,16 +199,16 @@ public class BreakHandler implements Listener {
 
 		breaks.put(uuid, b);
 
-		plugin.rewards.giveReward(p, b);
+		plugin.getRewardHandler().giveReward(p, b);
 
-		plugin.rewards.giveIntervalReward(p, b);
+		plugin.getRewardHandler().giveIntervalReward(p, b);
 
-		if (EZBlocks.options.pickaxeNeverBreaks()) {
+		if (plugin.getOptions().pickaxeNeverBreaks()) {
 
 			i.setDurability((short) 0);
 		}
 
-		if (EZBlocks.options.usePickCounter()
+		if (plugin.getOptions().usePickCounter()
 				&& p.hasPermission("ezblocks.pickaxecounter")) {
 
 			handlePickCounter(p, i);
@@ -218,7 +218,7 @@ public class BreakHandler implements Listener {
 	
 	private void handlePickCounter(Player p, ItemStack i) {
 		
-		String format = ChatColor.translateAlternateColorCodes('&', EZBlocks.options.getPickCounterFormat());
+		String format = ChatColor.translateAlternateColorCodes('&', plugin.getOptions().getPickCounterFormat());
 		int one = format.indexOf('%');
 		int two = format.lastIndexOf('%');
 		String first = format.substring(0, one);
@@ -226,7 +226,7 @@ public class BreakHandler implements Listener {
 		
 		ItemMeta meta = i.getItemMeta();
 		
-		if (EZBlocks.options.usePickCounterDisplayName()) {
+		if (plugin.getOptions().usePickCounterDisplayName()) {
 			
 			int breaks = 1;
 			
@@ -242,8 +242,8 @@ public class BreakHandler implements Listener {
 					breaks = amt+1;
 					meta.setDisplayName(format.replace("%blocks%", String.valueOf(breaks)));
 					i.setItemMeta(meta);
-					plugin.rewards.givePickaxeReward(p, breaks);
-					plugin.rewards.givePickaxeIntervalReward(p, breaks);
+					plugin.getRewardHandler().givePickaxeReward(p, breaks);
+					plugin.getRewardHandler().givePickaxeIntervalReward(p, breaks);
 					
 				} else if (displayName.contains(" "+first) && displayName.endsWith(second)) {
 					
@@ -257,15 +257,15 @@ public class BreakHandler implements Listener {
 					breaks = amt+1;
 					meta.setDisplayName(name+format.replace("%blocks%", String.valueOf(breaks)));
 					i.setItemMeta(meta);
-					plugin.rewards.givePickaxeReward(p, breaks);
-					plugin.rewards.givePickaxeIntervalReward(p, breaks);
+					plugin.getRewardHandler().givePickaxeReward(p, breaks);
+					plugin.getRewardHandler().givePickaxeIntervalReward(p, breaks);
 					
 				} else {
 					
 					meta.setDisplayName(displayName+" "+format.replace("%blocks%", "1"));		
 					i.setItemMeta(meta);	
-					plugin.rewards.givePickaxeReward(p, 1);
-					plugin.rewards.givePickaxeIntervalReward(p, 1);
+					plugin.getRewardHandler().givePickaxeReward(p, 1);
+					plugin.getRewardHandler().givePickaxeIntervalReward(p, 1);
 				}
 				
 			} else {
@@ -274,8 +274,8 @@ public class BreakHandler implements Listener {
 				
 				meta.setDisplayName(type+" "+format.replace("%blocks%", "1"));
 				i.setItemMeta(meta);
-				plugin.rewards.givePickaxeReward(p, 1);
-				plugin.rewards.givePickaxeIntervalReward(p, 1);
+				plugin.getRewardHandler().givePickaxeReward(p, 1);
+				plugin.getRewardHandler().givePickaxeIntervalReward(p, 1);
 			}
 
 		} else {
@@ -311,8 +311,8 @@ public class BreakHandler implements Listener {
 				
 				meta.setLore(newLore);
 				i.setItemMeta(meta);
-				plugin.rewards.givePickaxeReward(p, breaks);
-				plugin.rewards.givePickaxeIntervalReward(p, breaks);
+				plugin.getRewardHandler().givePickaxeReward(p, breaks);
+				plugin.getRewardHandler().givePickaxeIntervalReward(p, breaks);
 				
 			} else {
 				
@@ -320,8 +320,8 @@ public class BreakHandler implements Listener {
 				lore.add(format.replace("%blocks%", "1"));
 				meta.setLore(lore);
 				i.setItemMeta(meta);
-				plugin.rewards.givePickaxeReward(p, 1);
-				plugin.rewards.givePickaxeIntervalReward(p, 1);
+				plugin.getRewardHandler().givePickaxeReward(p, 1);
+				plugin.getRewardHandler().givePickaxeIntervalReward(p, 1);
 				
 			}
 		}
