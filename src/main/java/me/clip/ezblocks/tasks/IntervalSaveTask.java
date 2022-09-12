@@ -2,6 +2,7 @@ package me.clip.ezblocks.tasks;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.UUID;
 
 import me.clip.ezblocks.BreakHandler;
 import me.clip.ezblocks.EZBlocks;
@@ -31,7 +32,7 @@ public class IntervalSaveTask implements Runnable {
 			String uuid = si.next();
 			int broken = BreakHandler.breaks.get(uuid);
 			if (uuid != null) {
-			plugin.getPlayerConfig().savePlayer(uuid, broken);
+			plugin.getStorage().setBlocksBroken(UUID.fromString(uuid), broken);
 			}
 		}
 	}

@@ -2,6 +2,8 @@ package me.clip.ezblocks.tasks;
 
 import me.clip.ezblocks.EZBlocks;
 
+import java.util.UUID;
+
 public class PlayerSaveTask implements Runnable {
 
 	private EZBlocks plugin;
@@ -16,6 +18,6 @@ public class PlayerSaveTask implements Runnable {
 
 	@Override
 	public void run() {
-		plugin.getPlayerConfig().savePlayer(uuid, toSave);
+		plugin.getStorage().setBlocksBroken(UUID.fromString(uuid), toSave);
 	}
 }

@@ -30,7 +30,7 @@ public class YMLStorage implements Storage {
     @Override
     public void setBlocksBroken(UUID uuid, int amount) {
         dataConfig.set(uuid + ".blocks_broken", amount);
-        save(); // todo should it save each
+        save(); // todo should it save each time?
     }
 
     @Override

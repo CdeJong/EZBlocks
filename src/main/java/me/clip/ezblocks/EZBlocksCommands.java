@@ -7,6 +7,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.UUID;
+
 public class EZBlocksCommands implements CommandExecutor {
 	
 	EZBlocks plugin;
@@ -76,12 +78,8 @@ public class EZBlocksCommands implements CommandExecutor {
 							return true;
 						}
 						else {
-							if (plugin.getPlayerConfig().hasData(uid)) {
-								BreakHandler.breaks.put(uid, plugin.getPlayerConfig().getBlocksBroken(uid));
-							}
-							else {
-								BreakHandler.breaks.put(uid, 0);
-							}
+							BreakHandler.breaks.put(uid, plugin.getStorage().getBlocksBroken(UUID.fromString(uid)));
+
 							sms(s, plugin.getOptions().getBrokenMsg().replace("%player%", target.getName())
 									.replace("%blocksbroken%", BreakHandler.breaks.get(uid)+""));	
 						}
@@ -215,15 +213,10 @@ public class EZBlocksCommands implements CommandExecutor {
 					sms(s, plugin.getOptions().getBrokenMsg().replace("%player%", p.getName())
 								.replace("%blocksbroken%", BreakHandler.breaks.get(uuid) + ""));
 					return true;
-				} else {
-					if (plugin.getPlayerConfig().hasData(uuid)) {
-						BreakHandler.breaks.put(uuid, plugin.getPlayerConfig().getBlocksBroken(uuid));
-					} else {
-						BreakHandler.breaks.put(uuid, 0);
-					}
-					sms(s, plugin.getOptions().getBrokenMsg().replace("%player%", p.getName())
-								.replace("%blocksbroken%", BreakHandler.breaks.get(uuid) + ""));
 				}
+				BreakHandler.breaks.put(uuid, plugin.getStorage().getBlocksBroken(UUID.fromString(uuid)));
+				sms(s, plugin.getOptions().getBrokenMsg().replace("%player%", p.getName())
+						.replace("%blocksbroken%", BreakHandler.breaks.get(uuid) + ""));
 			}
 			return true;
 		}
@@ -289,18 +282,12 @@ public class EZBlocksCommands implements CommandExecutor {
 						return true;
 					}
 					else {
-						if (plugin.getPlayerConfig().hasData(uid)) {
-							BreakHandler.breaks.put(uid, plugin.getPlayerConfig().getBlocksBroken(uid));
-						}
-						else {
-							BreakHandler.breaks.put(uid, 0);
-						}
+						BreakHandler.breaks.put(uid, plugin.getStorage().getBlocksBroken(UUID.fromString(uid)));
+
 						sms(s, plugin.getOptions().getBrokenMsg().replace("%player%", target.getName())
 								.replace("%blocksbroken%", BreakHandler.breaks.get(uid)+""));	
 					}
-					
-					
-					
+
 				}
 				else {
 					sms(s, "&cIncorrect usage! &7/blocks check <player>");

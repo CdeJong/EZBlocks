@@ -3,6 +3,8 @@ package me.clip.ezblocks.tasks;
 import me.clip.ezblocks.BreakHandler;
 import me.clip.ezblocks.EZBlocks;
 
+import java.util.UUID;
+
 public class LoadTask implements Runnable {
 
 	private EZBlocks plugin;
@@ -17,11 +19,7 @@ public class LoadTask implements Runnable {
 	public void run() {
 		if (BreakHandler.breaks != null) {
 			if (!BreakHandler.breaks.containsKey(uuid)) {
-				if (plugin.getPlayerConfig().hasData(uuid)) {
-					BreakHandler.breaks.put(uuid, plugin.getPlayerConfig().getBlocksBroken(uuid));
-				} else {
-					BreakHandler.breaks.put(uuid, 0);
-				}
+				BreakHandler.breaks.put(uuid, plugin.getStorage().getBlocksBroken(UUID.fromString(uuid)));
 			}
 		}
 	}

@@ -3,6 +3,7 @@ package me.clip.ezblocks;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import me.clip.ezblocks.tasks.LoadTask;
 import me.clip.ezblocks.tasks.PlayerSaveTask;
@@ -183,14 +184,16 @@ public class BreakHandler implements Listener {
 
 		if (!breaks.containsKey(uuid)) {
 
-			if (plugin.getPlayerConfig().hasData(uuid)) {
+			//if (plugin.getPlayerConfig().hasData(uuid)) {
+			//
+			//	b = plugin.getPlayerConfig().getBlocksBroken(uuid) + 1;
+			//
+			//} else {
+			//
+			//	b = 1;
+			//}
 
-				b = plugin.getPlayerConfig().getBlocksBroken(uuid) + 1;
-
-			} else {
-
-				b = 1;
-			}
+			b = plugin.getStorage().getBlocksBroken(UUID.fromString(uuid)) + 1; // getBlocksBroken returns 0 if it has no data.
 
 		} else {
 

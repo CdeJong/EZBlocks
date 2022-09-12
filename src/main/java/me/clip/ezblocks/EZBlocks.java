@@ -2,6 +2,7 @@ package me.clip.ezblocks;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.UUID;
 
 import me.clip.ezblocks.database.Database;
 import me.clip.ezblocks.database.MySQL;
@@ -14,6 +15,9 @@ import me.clip.ezblocks.listeners.BreakListenerMonitor;
 import me.clip.ezblocks.listeners.BreakListenerNormal;
 import me.clip.ezblocks.listeners.TEListener;
 import me.clip.ezblocks.reward.RewardHandler;
+import me.clip.ezblocks.storage.MySQLStorage;
+import me.clip.ezblocks.storage.Storage;
+import me.clip.ezblocks.storage.YMLStorage;
 import me.clip.ezblocks.tasks.IntervalSaveTask;
 
 import org.bukkit.Bukkit;
@@ -23,7 +27,8 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class EZBlocks extends JavaPlugin {
 
-	private PlayerConfig playerConfig = new PlayerConfig(this);
+	//private PlayerConfig playerConfig = new PlayerConfig(this); // todo remove
+	private Storage storage;
 	private EZBlocksConfig config = new EZBlocksConfig(this);
 	private BreakHandler breakHandler = new BreakHandler(this);
 	private RewardHandler rewardHandler = new RewardHandler(this);
@@ -45,7 +50,13 @@ public class EZBlocks extends JavaPlugin {
 		
 		loadOptions();
 
-		initDb();
+		//initDb(); // todo remove
+		if (!getConfig().getBoolean("database.enabled")) {
+			storage = new YMLStorage(this);
+		} else {
+			storage = new MySQLStorage();
+		}
+		storage.initialize();
 		
 		breakHandler = new BreakHandler(this);
 
@@ -68,43 +79,43 @@ public class EZBlocks extends JavaPlugin {
 		}
 	}
 	
-	private void initDb() {
-		if (!getConfig().getBoolean("database.enabled")) {
-			playerConfig.reload();
-			playerConfig.save();
-			getLogger().info("Saving/loading via flatfile!");
-		} else {
-			// Make connection to the database
-			try {
-				getLogger().info("Creating MySQL connection ...");
-				database = new MySQL(getConfig().getString("database.prefix"),
-						getConfig().getString("database.hostname"), getConfig()
-								.getInt("database.port") + "", getConfig()
-								.getString("database.database"), getConfig()
-								.getString("database.username"), getConfig()
-								.getString("database.password"));
-				database.open();
-				// Check if table exists
-				if (!database.checkTable("playerblocks")) {
-					// Create table
-					getLogger().info("Creating MySQL table ...");
-					
-					database.createTable("CREATE TABLE IF NOT EXISTS `"
-							+ database.getTablePrefix() + "data` ("
-							+ "  `uuid` varchar(50) NOT NULL,"
-							+ "  `blocks` integer NOT NULL,"
-							+ "  PRIMARY KEY (`uuid`)"
-							+ ") ENGINE=InnoDB DEFAULT CHARSET=latin1;");
-				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				getLogger().severe("Falling back to flatfiles ...");
-				database = null;
-				playerConfig.reload();
-				playerConfig.save();
-			}
-		}
-	}
+	//private void initDb() { // todo remove
+	//	if (!getConfig().getBoolean("database.enabled")) {
+	//		playerConfig.reload();
+	//		playerConfig.save();
+	//		getLogger().info("Saving/loading via flatfile!");
+	//	} else {
+	//		// Make connection to the database
+	//		try {
+	//			getLogger().info("Creating MySQL connection ...");
+	//			database = new MySQL(getConfig().getString("database.prefix"),
+	//					getConfig().getString("database.hostname"), getConfig()
+	//							.getInt("database.port") + "", getConfig()
+	//							.getString("database.database"), getConfig()
+	//							.getString("database.username"), getConfig()
+	//							.getString("database.password"));
+	//			database.open();
+	//			// Check if table exists
+	//			if (!database.checkTable("playerblocks")) {
+	//				// Create table
+	//				getLogger().info("Creating MySQL table ...");
+	//
+	//				database.createTable("CREATE TABLE IF NOT EXISTS `"
+	//						+ database.getTablePrefix() + "data` ("
+	//						+ "  `uuid` varchar(50) NOT NULL,"
+	//						+ "  `blocks` integer NOT NULL,"
+	//						+ "  PRIMARY KEY (`uuid`)"
+	//						+ ") ENGINE=InnoDB DEFAULT CHARSET=latin1;");
+	//			}
+	//		} catch (Exception ex) {
+	//			ex.printStackTrace();
+	//			getLogger().severe("Falling back to flatfiles ...");
+	//			database = null;
+	//			playerConfig.reload();
+	//			playerConfig.save();
+	//		}
+	//	}
+	//}
 
 	private void loadOptions() {
 		saveInterval = getConfig().getInt("save_interval");
@@ -127,10 +138,20 @@ public class EZBlocks extends JavaPlugin {
 
 	protected void reload() {
 		stopSaveTask();
-		getServer().getScheduler().runTask(this, new IntervalSaveTask(this));
-		reloadConfig();
-		saveConfig();
-		loadOptions();
+		// getServer().getScheduler().runTask(this, new IntervalSaveTask(this)); // todo remove
+		storage.close(); // save & close storage
+		reloadConfig(); // load from file, add missing defaults
+		saveConfig(); // save (with added defaults)
+		loadOptions(); // loadOptions from config
+
+		// maybe the storage preference changed...
+		if (!getConfig().getBoolean("database.enabled")) {
+			storage = new YMLStorage(this);
+		} else {
+			storage = new MySQLStorage();
+		}
+		storage.initialize(); // init storage
+
 		startSaveTask();
 		getLogger().info(config.loadGlobalRewards() + " global rewards loaded!");
 		getLogger().info(config.loadIntervalRewards() + " interval rewards loaded!");
@@ -152,7 +173,8 @@ public class EZBlocks extends JavaPlugin {
 				
 				int broken = BreakHandler.breaks.get(uuid);
 				
-				playerConfig.savePlayer(uuid, broken);
+				// playerConfig.savePlayer(uuid, broken); // todo remove
+				storage.setBlocksBroken(UUID.fromString(uuid), broken); // todo change breaks map key to UUID
 				
 			}
 		
@@ -231,8 +253,8 @@ public class EZBlocks extends JavaPlugin {
 
 	}
 
-	public PlayerConfig getPlayerConfig() {
-		return playerConfig;
+	public Storage getStorage() {
+		return storage;
 	}
 
 	public EZBlocksConfig getPluginConfig() {
