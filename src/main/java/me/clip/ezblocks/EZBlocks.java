@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
+import me.clip.ezblocks.block.BlockController;
+import me.clip.ezblocks.block.BlockControllerImpl;
 import me.clip.ezblocks.database.Database;
 import me.clip.ezblocks.database.MySQL;
 import me.clip.ezblocks.listeners.AutoSellListener;
@@ -30,7 +32,8 @@ public class EZBlocks extends JavaPlugin {
 	//private PlayerConfig playerConfig = new PlayerConfig(this); // todo remove
 	private Storage storage;
 	private EZBlocksConfig config = new EZBlocksConfig(this);
-	private BreakHandler breakHandler = new BreakHandler(this);
+	private BreakHandler breakHandler = new BreakHandler(this); // todo remove old class
+	private BlockController blockController; // todo implement this class
 	private RewardHandler rewardHandler = new RewardHandler(this);
 	private EZBlocksCommands commands = new EZBlocksCommands(this);
 
@@ -59,6 +62,7 @@ public class EZBlocks extends JavaPlugin {
 		storage.initialize();
 		
 		breakHandler = new BreakHandler(this);
+		blockController = new BlockControllerImpl(this);
 
 		Bukkit.getServer().getPluginManager().registerEvents(breakHandler, this);
 		
@@ -162,6 +166,7 @@ public class EZBlocks extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		stopSaveTask();
+		blockController.close(); // todo testing
 		if (BreakHandler.breaks != null) {
 			Set<String> save = BreakHandler.breaks.keySet();
 		
@@ -259,6 +264,10 @@ public class EZBlocks extends JavaPlugin {
 
 	public EZBlocksConfig getPluginConfig() {
 		return config;
+	}
+
+	public BlockController getBlockController() {
+		return blockController;
 	}
 
 	public BreakHandler getBreakHandler() {

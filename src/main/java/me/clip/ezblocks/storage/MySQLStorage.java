@@ -7,8 +7,8 @@ public class MySQLStorage extends SQLStorage {
 
     private static final String DB_HOST = "localhost";
     private static final String DB_PORT = "3306";
-    private static final String DB_NAME = "stormprisoncore";  // todo config
-    private static final String DB_USER = "root";
+    private static final String DB_NAME = "ezblocks";  // todo config
+    private static final String DB_USER = "ezblocks";
     private static final String DB_PASSWORD = "Welcome01!";
 
     private static final HikariConfig CONFIG = new HikariConfig();

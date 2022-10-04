@@ -1,6 +1,6 @@
 package me.clip.ezblocks.config;
 
-import javafx.scene.paint.Material;
+import org.bukkit.Material;
 
 import java.util.List;
 

@@ -1,11 +1,14 @@
 package me.clip.ezblocks.storage;
 
 import me.clip.ezblocks.EZBlocks;
+import me.clip.ezblocks.block.BlockTopEntry;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 public class YMLStorage implements Storage {
@@ -36,6 +39,11 @@ public class YMLStorage implements Storage {
     @Override
     public int getBlocksBroken(UUID uuid) {
         return dataConfig.getInt(uuid + ".blocks_broken"); // if no record or file, default 0
+    }
+
+    @Override
+    public Map<Integer, BlockTopEntry> getBlocksTop() {
+        return Collections.emptyMap(); // todo
     }
 
     @Override

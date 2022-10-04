@@ -1,11 +1,15 @@
 package me.clip.ezblocks.storage;
 
 import com.zaxxer.hikari.HikariDataSource;
+import me.clip.ezblocks.block.BlockTopEntry;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public abstract class SQLStorage implements Storage {
@@ -16,15 +20,13 @@ public abstract class SQLStorage implements Storage {
     protected HikariDataSource hikari;
 
     protected void createTables() {
-        String query = "CREATE TABLE IF NOT EXISTS ? (" +
+        String query = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
                 "uuid char(36) NOT NULL," +
                 "blocksmined integer NOT NULL," +
                 "PRIMARY KEY (`uuid`));";
 
         try (Connection connection = hikari.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-
-            preparedStatement.setString(1, TABLE_NAME);
 
             preparedStatement.executeUpdate();
 
@@ -35,15 +37,14 @@ public abstract class SQLStorage implements Storage {
 
     @Override
     public void setBlocksBroken(UUID uuid, int amount) {
-        String query = "INSERT INTO ? (uuid, blocksmined) VALUES (?, ?) ON DUPLICATE KEY UPDATE blocksmined = ?;";
+        String query = "INSERT INTO " + TABLE_NAME + " (uuid, blocksmined) VALUES (?, ?) ON DUPLICATE KEY UPDATE blocksmined = ?;";
 
         try (Connection connection = hikari.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-            preparedStatement.setString(1, TABLE_NAME);
-            preparedStatement.setString(2, uuid.toString());
+            preparedStatement.setString(1, uuid.toString());
+            preparedStatement.setInt(2, amount);
             preparedStatement.setInt(3, amount);
-            preparedStatement.setInt(4, amount);
 
             preparedStatement.executeUpdate();
 
@@ -54,16 +55,14 @@ public abstract class SQLStorage implements Storage {
 
     @Override
     public int getBlocksBroken(UUID uuid) {
-        String query = "SELECT blocksmined FROM ? WHERE uuid = ?;";
-        ResultSet resultSet;
+        String query = "SELECT blocksmined FROM " + TABLE_NAME + " WHERE uuid = ?;";
 
         try (Connection connection = hikari.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-            preparedStatement.setString(1, TABLE_NAME);
-            preparedStatement.setString(2, uuid.toString());
+            preparedStatement.setString(1, uuid.toString());
 
-            resultSet = preparedStatement.executeQuery();
+            ResultSet resultSet = preparedStatement.executeQuery();
 
             if (!resultSet.next()) {
                 return 0;
@@ -73,6 +72,31 @@ public abstract class SQLStorage implements Storage {
         } catch (SQLException e) {
             e.printStackTrace();
             return 0;
+        }
+    }
+
+    @Override
+    public Map<Integer, BlockTopEntry> getBlocksTop() {
+        String query = "SELECT uuid, blocksmined FROM " + TABLE_NAME + " ORDER BY blocksmined DESC LIMIT 10;";
+        Map<Integer, BlockTopEntry> blocksTop = new LinkedHashMap<>();
+
+        try (Connection connection = hikari.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            int position = 1;
+            while (resultSet.next()) {
+                UUID uuid = UUID.fromString(resultSet.getString("uuid"));
+                int blocksBroken = resultSet.getInt("blocksmined");
+
+                blocksTop.put(position, new BlockTopEntry(uuid, blocksBroken));
+                position++;
+            }
+
+            return blocksTop;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Collections.emptyMap();
         }
     }
 }
