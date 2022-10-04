@@ -1,13 +1,7 @@
 package me.clip.ezblocks;
 
-import java.util.Iterator;
-import java.util.Set;
-import java.util.UUID;
-
 import me.clip.ezblocks.block.BlockController;
 import me.clip.ezblocks.block.BlockControllerImpl;
-import me.clip.ezblocks.database.Database;
-import me.clip.ezblocks.database.MySQL;
 import me.clip.ezblocks.listeners.AutoSellListener;
 import me.clip.ezblocks.listeners.BreakListenerHigh;
 import me.clip.ezblocks.listeners.BreakListenerHighest;
@@ -20,28 +14,21 @@ import me.clip.ezblocks.reward.RewardHandler;
 import me.clip.ezblocks.storage.MySQLStorage;
 import me.clip.ezblocks.storage.Storage;
 import me.clip.ezblocks.storage.YMLStorage;
-import me.clip.ezblocks.tasks.IntervalSaveTask;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 
 public class EZBlocks extends JavaPlugin {
 
-	//private PlayerConfig playerConfig = new PlayerConfig(this); // todo remove
+	private static EZBlocks instance;
+
 	private Storage storage;
 	private EZBlocksConfig config = new EZBlocksConfig(this);
-	private BreakHandler breakHandler = new BreakHandler(this); // todo remove old class
 	private BlockController blockController; // todo implement this class
 	private RewardHandler rewardHandler = new RewardHandler(this);
 	private EZBlocksCommands commands = new EZBlocksCommands(this);
 
-	private BlockOptions options;
-	private int saveInterval;
-	private BukkitTask savetask;
-	private Database database = null;
-	private static EZBlocks instance;
+	private BlockOptions options; // todo remove
 
 
 	@Override
@@ -49,29 +36,28 @@ public class EZBlocks extends JavaPlugin {
 
 		instance = this;
 
+		// Config
+		// todo replace for new Config object
 		config.loadConfigurationFile();
-		
 		loadOptions();
 
-		//initDb(); // todo remove
+		// Storage
 		if (!getConfig().getBoolean("database.enabled")) {
 			storage = new YMLStorage(this);
 		} else {
 			storage = new MySQLStorage();
 		}
 		storage.initialize();
-		
-		breakHandler = new BreakHandler(this);
+
+		// Controllers
 		blockController = new BlockControllerImpl(this);
 
-		Bukkit.getServer().getPluginManager().registerEvents(breakHandler, this);
-		
-		registerBlockBreakListener();
-		
-		startSaveTask();
-		
+		// registerBlockBreakListener(); // todo move to blockcontroller
+
+		// Commands
 		getCommand("blocks").setExecutor(commands);
-		
+
+		// todo add getter to Config and load method with logger to blockscontroller
 		getLogger().info(config.loadGlobalRewards() + " global rewards loaded!");
 		getLogger().info(config.loadIntervalRewards() + " interval rewards loaded!");
 		getLogger().info(config.loadPickaxeGlobalRewards() + " global pickaxe rewards loaded!");
@@ -82,47 +68,9 @@ public class EZBlocks extends JavaPlugin {
 			getLogger().info("Hooked into TokenEnchant for TEBlockExplodeEvent listener");
 		}
 	}
-	
-	//private void initDb() { // todo remove
-	//	if (!getConfig().getBoolean("database.enabled")) {
-	//		playerConfig.reload();
-	//		playerConfig.save();
-	//		getLogger().info("Saving/loading via flatfile!");
-	//	} else {
-	//		// Make connection to the database
-	//		try {
-	//			getLogger().info("Creating MySQL connection ...");
-	//			database = new MySQL(getConfig().getString("database.prefix"),
-	//					getConfig().getString("database.hostname"), getConfig()
-	//							.getInt("database.port") + "", getConfig()
-	//							.getString("database.database"), getConfig()
-	//							.getString("database.username"), getConfig()
-	//							.getString("database.password"));
-	//			database.open();
-	//			// Check if table exists
-	//			if (!database.checkTable("playerblocks")) {
-	//				// Create table
-	//				getLogger().info("Creating MySQL table ...");
-	//
-	//				database.createTable("CREATE TABLE IF NOT EXISTS `"
-	//						+ database.getTablePrefix() + "data` ("
-	//						+ "  `uuid` varchar(50) NOT NULL,"
-	//						+ "  `blocks` integer NOT NULL,"
-	//						+ "  PRIMARY KEY (`uuid`)"
-	//						+ ") ENGINE=InnoDB DEFAULT CHARSET=latin1;");
-	//			}
-	//		} catch (Exception ex) {
-	//			ex.printStackTrace();
-	//			getLogger().severe("Falling back to flatfiles ...");
-	//			database = null;
-	//			playerConfig.reload();
-	//			playerConfig.save();
-	//		}
-	//	}
-	//}
 
-	private void loadOptions() {
-		saveInterval = getConfig().getInt("save_interval");
+	private void loadOptions() { // todo remove
+		//saveInterval = getConfig().getInt("save_interval");
 		options = new BlockOptions();
 		options.setUseBlocksCommand(getConfig().getBoolean("blocks_broken_command_enabled"));
 		options.setBrokenMsg(getConfig().getString("blocks_broken_message"));
@@ -141,8 +89,6 @@ public class EZBlocks extends JavaPlugin {
 	}
 
 	protected void reload() {
-		stopSaveTask();
-		// getServer().getScheduler().runTask(this, new IntervalSaveTask(this)); // todo remove
 		storage.close(); // save & close storage
 		reloadConfig(); // load from file, add missing defaults
 		saveConfig(); // save (with added defaults)
@@ -156,7 +102,6 @@ public class EZBlocks extends JavaPlugin {
 		}
 		storage.initialize(); // init storage
 
-		startSaveTask();
 		getLogger().info(config.loadGlobalRewards() + " global rewards loaded!");
 		getLogger().info(config.loadIntervalRewards() + " interval rewards loaded!");
 		getLogger().info(config.loadPickaxeGlobalRewards() + " global pickaxe rewards loaded!");
@@ -165,29 +110,28 @@ public class EZBlocks extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-		stopSaveTask();
-		blockController.close(); // todo testing
-		if (BreakHandler.breaks != null) {
-			Set<String> save = BreakHandler.breaks.keySet();
-		
-			Iterator<String> si = save.iterator();
-		
-			while (si.hasNext()) {
-				
-				String uuid = si.next();
-				
-				int broken = BreakHandler.breaks.get(uuid);
-				
-				// playerConfig.savePlayer(uuid, broken); // todo remove
-				storage.setBlocksBroken(UUID.fromString(uuid), broken); // todo change breaks map key to UUID
-				
-			}
-		
-			System.out.println("[EZBlocks] "+save.size()+" players saved!");
-		}
+		blockController.close();
+		//if (BreakHandler.breaks != null) { // todo move to blockController.close()
+		//	Set<String> save = BreakHandler.breaks.keySet();
+		//
+		//	Iterator<String> si = save.iterator();
+		//
+		//	while (si.hasNext()) {
+		//
+		//		String uuid = si.next();
+		//
+		//		int broken = BreakHandler.breaks.get(uuid);
+		//
+		//		// playerConfig.savePlayer(uuid, broken); // todo remove
+		//		storage.setBlocksBroken(UUID.fromString(uuid), broken); // todo change breaks map key to UUID
+		//
+		//	}
+		//
+		//	System.out.println("[EZBlocks] "+save.size()+" players saved!");
+		//}
 	}
 
-	protected void registerBlockBreakListener() {
+	protected void registerBlockBreakListener() { // todo redo this
 		
 		if (config.useAutoSellEvents() && Bukkit.getPluginManager().getPlugin("AutoSell") != null) {
 			getLogger().info("Using AutoSell events for block break and sell detection...");
@@ -223,41 +167,6 @@ public class EZBlocks extends JavaPlugin {
 		}
 	}
 
-	private void startSaveTask() {
-		if (savetask == null) {
-			getLogger().info("Saving all players every " + saveInterval + " minutes");
-			savetask = getServer().getScheduler().runTaskTimerAsynchronously(
-					this, new IntervalSaveTask(this), 1L,
-					((20L * 60L) * saveInterval));
-		} else {
-			savetask.cancel();
-			savetask = null;
-			getLogger().info(
-					"Saving all players every " + saveInterval + " minutes");
-			savetask = getServer().getScheduler().runTaskTimerAsynchronously(
-					this, new IntervalSaveTask(this), 1L,
-					((20L * 60L) * saveInterval));
-		}
-
-	}
-
-	private void stopSaveTask() {
-		if (savetask != null) {
-			savetask.cancel();
-			savetask = null;
-		}
-	}
-
-	public int getBlocksBroken(Player player) {
-		if (BreakHandler.breaks != null
-				&& BreakHandler.breaks.containsKey(player.getUniqueId().toString())) {
-			return BreakHandler.breaks.get(player.getUniqueId().toString());
-		} else {
-			return 0;
-		}
-
-	}
-
 	public Storage getStorage() {
 		return storage;
 	}
@@ -270,10 +179,6 @@ public class EZBlocks extends JavaPlugin {
 		return blockController;
 	}
 
-	public BreakHandler getBreakHandler() {
-		return breakHandler;
-	}
-
 	public RewardHandler getRewardHandler() {
 		return rewardHandler;
 	}
@@ -282,11 +187,19 @@ public class EZBlocks extends JavaPlugin {
 		return options;
 	}
 
-	public Database getPluginDatabase() {
-		return database;
+	public static EZBlocks getInstance() {
+		return instance;
 	}
 
-	public static EZBlocks getInstance() {
+	// todo used in the original PlaceholderAPI expansion
+	@Deprecated
+	public int getBlocksBroken(Player player) {
+		return blockController.getBlocksBroken(player);
+	}
+
+	// todo used in the original PlaceholderAPI expansion
+	@Deprecated
+	public static EZBlocks getEZBlocks() {
 		return instance;
 	}
 }

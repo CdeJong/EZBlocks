@@ -10,10 +10,6 @@ public interface BlockController {
 
     int getBlocksBroken(Player player);
 
-    void resetBlocks(Player player);
-
-    void resetAll();
-
     BlockTopEntry getBlocksTop(int position);
 
     Map<Integer, BlockTopEntry> getBlocksTop();
